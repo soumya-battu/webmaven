@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     tools {
-        maven 'MAVEN-HOME'   // Make sure this name matches Jenkins Maven installation
-        jdk 'JDK'            // Make sure JDK is configured in Jenkins
+        maven 'Maven 3.9.11'       // Use the exact name from Jenkins configuration
+        jdk 'C:\\Program Files\\Java\\jdk-17'  // Use exact JDK path or configured name
     }
 
     environment {
@@ -15,10 +15,7 @@ pipeline {
     stages {
         stage('Checkout & Clean') {
             steps {
-                // Clone repo using Jenkins Git plugin
                 git branch: 'main', url: "${GIT_REPO}", credentialsId: "${GIT_CREDENTIALS_ID}"
-                
-                // Clean target folder
                 bat "mvn clean -f ${PROJECT_DIR}/pom.xml"
             }
         }
