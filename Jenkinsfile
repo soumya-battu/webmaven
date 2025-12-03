@@ -1,35 +1,43 @@
 pipeline {
     agent any
 
+    // Define tools installed in Jenkins
+    tools {
+        maven 'Maven'  // Maven installation name in Jenkins Global Tool Configuration
+        jdk 'JDK'      // JDK installation name in Jenkins
+    }
+
     environment {
-        // Tomcat configuration
-        TOMCAT_URL = 'http://localhost:8080/manager/text' // Change if needed
-        TOMCAT_USER = 'admin'          // Tomcat manager username
-        TOMCAT_PASSWORD = 'admin123'   // Tomcat manager password
+        // Tomcat details
+        TOMCAT_URL = 'http://localhost:8080/manager/text'  // Tomcat manager URL
+        TOMCAT_USER = 'admin'       // Tomcat manager username
+        TOMCAT_PASSWORD = 'admin123' // Tomcat manager password
+
+        // GitHub PAT credential ID
+        GIT_CREDENTIALS_ID = 'github-pat'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout from GitHub') {
             steps {
-                // Checkout code from GitHub using PAT stored in Jenkins credentials
                 git branch: 'main',
                     url: 'https://github.com/soumya-battu/webmaven.git',
-                    credentialsId: 'github-pat'  // ID of your GitHub PAT credential
+                    credentialsId: "${GIT_CREDENTIALS_ID}"
             }
         }
 
-        stage('Build') {
+        stage('Build with Maven') {
             steps {
-                // Build using Maven
+                // Windows batch command
                 bat 'mvn clean package'
             }
         }
 
         stage('Deploy to Tomcat') {
             steps {
-                // Deploy WAR to Tomcat using Jenkins Deploy Plugin
+                // Deploy WAR to Tomcat using Jenkins Deploy plugin
                 deploy adapters: [tomcat9(
-                    credentialsId: 'tomcat-cred', // Jenkins credential ID for Tomcat manager
+                    credentialsId: 'tomcat-cred', // Jenkins credential for Tomcat manager
                     path: '/Webpath',
                     url: "${TOMCAT_URL}"
                 )],
