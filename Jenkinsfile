@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Tomcat configuration
-        TOMCAT_URL = 'http://localhost:8080/manager/text'
+        TOMCAT_URL = 'http://localhost:8080/manager/text' // Change if needed
         TOMCAT_USER = 'admin'          // Tomcat manager username
         TOMCAT_PASSWORD = 'admin123'   // Tomcat manager password
     }
@@ -11,24 +11,30 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Checkout your code from Git
-                git branch: 'main', url: 'https://github.com/yourusername/yourrepo.git'
+                // Checkout code from GitHub using PAT stored in Jenkins credentials
+                git branch: 'main',
+                    url: 'https://github.com/soumya-battu/webmaven.git',
+                    credentialsId: 'github-pat'  // ID of your GitHub PAT credential
             }
         }
 
         stage('Build') {
             steps {
                 // Build using Maven
-                sh 'mvn clean package'
+                bat 'mvn clean package'
             }
         }
 
         stage('Deploy to Tomcat') {
             steps {
-                // Deploy using Cargo Maven plugin or Jenkins Deploy Plugin
-                deploy adapters: [tomcat9(credentialsId: 'tomcat-cred', path: '/Webpath', url: "${TOMCAT_URL}")], 
-                       contextPath: '/Webpath', 
-                       war: '**/target/*.war'
+                // Deploy WAR to Tomcat using Jenkins Deploy Plugin
+                deploy adapters: [tomcat9(
+                    credentialsId: 'tomcat-cred', // Jenkins credential ID for Tomcat manager
+                    path: '/Webpath',
+                    url: "${TOMCAT_URL}"
+                )],
+                contextPath: '/Webpath',
+                war: '**/target/*.war'
             }
         }
     }
